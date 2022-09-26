@@ -17,7 +17,7 @@ namespace WhackAMole
         string m_text;
         BUTTON_TYPE m_type;
         public enum PRESSED {HIT, MISS };
-        public enum BUTTON_TYPE { PLAY, OPTIONS, QUIT, MENU}
+        public enum BUTTON_TYPE { PLAY, OPTIONS, QUIT, MENU, MEDIUM, HIGH, BACK}
         private PRESSED m_pressed = PRESSED.MISS;
         private void SetPos(BUTTON_TYPE type)
         {
@@ -31,20 +31,38 @@ namespace WhackAMole
                     }
                 case BUTTON_TYPE.OPTIONS:
                     {
-                        m_posX *= 0.25f * 2;
+                        m_posX *= 0.25f * 1;
                         m_posY *= 0.25f * 2;
                         break;
                     }
                 case BUTTON_TYPE.QUIT:
                     {
-                        m_posX *= 0.25f * 3;
+                        m_posX *= 0.25f * 1;
                         m_posY *= 0.25f * 3;
                         break;
                     }
                 case BUTTON_TYPE.MENU:
                     {
-                        m_posX *= 0.25f * 4;
+                        m_posX *= 0.25f * 1;
                         m_posY *= 0.25f * 4;
+                        break;
+                    }
+                case BUTTON_TYPE.MEDIUM:
+                    {
+                        m_posX *= 0.25f * 1;
+                        m_posY *= 0.25f * 1;
+                        break;
+                    }
+                case BUTTON_TYPE.HIGH:
+                    {
+                        m_posX *= 0.25f * 1;
+                        m_posY *= 0.25f * 2;
+                        break;
+                    }
+                case BUTTON_TYPE.BACK:
+                    {
+                        m_posX *= 0.25f * 1;
+                        m_posY *= 0.25f * 3;
                         break;
                     }
             }
@@ -74,20 +92,19 @@ namespace WhackAMole
             SetPos(type);
             m_type = type;
         }
-        public void onResize(float px, float py)
+        public void OnResize(int px, int py)
         {
             m_posX = px;
             m_posY = py;
             SetPos(m_type);
         }
-        public PRESSED GetPressed() { return m_pressed; }
         public string GetText() { return m_text; } 
         public PRESSED Update(MouseState ms)
         {
             if (ms.LeftButton==ButtonState.Pressed)
             {
-                if(ms.X>= m_posX && ms.X<= m_width
-                    && ms.Y >= m_posY && ms.Y <= m_height)
+                if(ms.X>= m_posX && ms.X<= m_posX+m_width
+                    && ms.Y >= m_posY && ms.Y <= m_posY+m_height)
                 {
                     return PRESSED.HIT;
                 }
@@ -100,6 +117,11 @@ namespace WhackAMole
             {
                 return PRESSED.MISS;    
             }
+        }
+        public void Draw(SpriteBatch sb, SpriteFont sf)
+        {
+            sb.DrawString(sf, m_text, new Vector2(m_posX, m_posY), Color.Red);
+            
         }
     }
 }
