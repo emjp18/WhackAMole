@@ -25,13 +25,13 @@ namespace WhackAMole
             {
                 case BUTTON_TYPE.PLAY:
                     {
-                        m_posX *= 0.25f * 1;
+                        m_posX *= 0.25f * 2;
                         m_posY *= 0.25f * 1;
                         break;
                     }
                 case BUTTON_TYPE.OPTIONS:
                     {
-                        m_posX *= 0.25f * 1;
+                        m_posX *= 0.25f * 2;
                         m_posY *= 0.25f * 2;
                         break;
                     }
@@ -50,7 +50,7 @@ namespace WhackAMole
                 case BUTTON_TYPE.MEDIUM:
                     {
                         m_posX *= 0.25f * 1;
-                        m_posY *= 0.25f * 1;
+                        m_posY *= 0.25f * 3;
                         break;
                     }
                 case BUTTON_TYPE.HIGH:
@@ -62,7 +62,7 @@ namespace WhackAMole
                 case BUTTON_TYPE.BACK:
                     {
                         m_posX *= 0.25f * 1;
-                        m_posY *= 0.25f * 3;
+                        m_posY *= 0.25f * 1;
                         break;
                     }
             }

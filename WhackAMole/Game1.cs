@@ -15,6 +15,7 @@ namespace WhackAMole
             _graphics.PreferredBackBufferWidth = w;
             _graphics.PreferredBackBufferHeight = h;
             _graphics.ApplyChanges();
+            bgscale = (float)w / (float)backGroundT.Width;
         }
         private GraphicsDeviceManager _graphics;
         private SpriteBatch spriteBatch;
@@ -45,7 +46,7 @@ namespace WhackAMole
 
         protected override void Initialize()
         {
-            // TODO: Add your initialization logic here
+            
 
             base.Initialize();
         }
@@ -99,6 +100,10 @@ namespace WhackAMole
                     }
                 case GAMESTATE.GAME:
                     {
+                        if (backButton.Update(Mouse.GetState()) == Button.PRESSED.HIT)
+                        {
+                            currentState = GAMESTATE.MENU;
+                        }
                         break;
                     }
                 case GAMESTATE.OPTIONS:
@@ -141,6 +146,7 @@ namespace WhackAMole
                 case GAMESTATE.GAME:
                     {
                         spriteBatch.Draw(backGroundT, new Vector2(0, 0), null, Color.White, 0.0f, new Vector2(0, 0), bgscale, SpriteEffects.None, 0);
+                        backButton.Draw(spriteBatch, arialSF);
                         break;
                     }
                 case GAMESTATE.OPTIONS:
