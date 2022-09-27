@@ -9,12 +9,16 @@ using Microsoft.Xna.Framework.Input;
 
 namespace WhackAMole
 {
-    internal class Sprite
+    internal class Tex
     {
         protected Texture2D m_texture2D;
         protected Vector2 m_pos;
-
-        public Sprite(Texture2D tex, Vector2 pos)
+        public Tex()
+        {
+            m_texture2D = null;
+            m_pos = Vector2.Zero;
+        }
+        public Tex(Texture2D tex, Vector2 pos)
         {
             m_texture2D = tex;
             m_pos = pos;

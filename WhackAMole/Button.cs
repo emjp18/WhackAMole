@@ -61,8 +61,8 @@ namespace WhackAMole
                     }
                 case BUTTON_TYPE.BACK:
                     {
-                        m_posX *= 0.25f * 1;
-                        m_posY *= 0.25f * 1;
+                        m_posX *= 0 * 1;
+                        m_posY *= 0 * 1;
                         break;
                     }
             }
