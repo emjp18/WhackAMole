@@ -27,25 +27,28 @@ namespace WhackAMole
             float wStep = (float)w / (float)3;
             float wStep1 = ((float)w / (float)3) * 2;
             float wStep2 = w;
-            holes[0, 0] = new Mole(moleT, holeT, holeForeT, new Vector2(wStep - moleT.Width, hStep - moleT.Height));
-            holes[0, 1] = new Mole(moleT, holeT, holeForeT, new Vector2(wStep - moleT.Width, hStep1 - moleT.Height));
-            holes[0, 2] = new Mole(moleT, holeT, holeForeT, new Vector2(wStep - moleT.Width, hStep2 - moleT.Height));
-            holes[1, 0] = new Mole(moleT, holeT, holeForeT, new Vector2(wStep1 - moleT.Width, hStep - moleT.Height));
-            holes[1, 1] = new Mole(moleT, holeT, holeForeT, new Vector2(wStep1 - moleT.Width, hStep1 - moleT.Height));
-            holes[1, 2] = new Mole(moleT, holeT, holeForeT, new Vector2(wStep1 - moleT.Width, hStep2 - moleT.Height));
-            holes[2, 0] = new Mole(moleT, holeT, holeForeT, new Vector2(wStep2 - moleT.Width, hStep - moleT.Height));
-            holes[2, 1] = new Mole(moleT, holeT, holeForeT, new Vector2(wStep2 - moleT.Width, hStep1 - moleT.Height));
-            holes[2, 2] = new Mole(moleT, holeT, holeForeT, new Vector2(wStep2 - moleT.Width, hStep2 - moleT.Height));
+            holes[0, 0] = new Mole(moleT, holeT, holeForeT, koT, new Vector2(wStep - moleT.Width, hStep - moleT.Height * 0.5f));
+            holes[0, 1] = new Mole(moleT, holeT, holeForeT,koT,new Vector2(wStep - moleT.Width, hStep1 - moleT.Height * 0.5f));
+            holes[0, 2] = new Mole(moleT, holeT, holeForeT,koT,new Vector2(wStep - moleT.Width, hStep2 - moleT.Height * 0.5f));
+            holes[1, 0] = new Mole(moleT, holeT, holeForeT,koT,new Vector2(wStep1 - moleT.Width, hStep - moleT.Height * 0.5f));
+            holes[1, 1] = new Mole(moleT, holeT, holeForeT,koT,new Vector2(wStep1 - moleT.Width, hStep1 - moleT.Height * 0.5f));
+            holes[1, 2] = new Mole(moleT, holeT, holeForeT,koT,new Vector2(wStep1 - moleT.Width, hStep2 - moleT.Height * 0.5f));
+            holes[2, 0] = new Mole(moleT, holeT, holeForeT,koT,new Vector2(wStep2 - moleT.Width, hStep - moleT.Height * 0.5f));
+            holes[2, 1] = new Mole(moleT, holeT, holeForeT,koT,new Vector2(wStep2 - moleT.Width, hStep1 - moleT.Height * 0.5f));
+            holes[2, 2] = new Mole(moleT, holeT, holeForeT,koT,new Vector2(wStep2 - moleT.Width, hStep2 - moleT.Height*0.5f));
 
         }
         private GraphicsDeviceManager _graphics;
         private SpriteBatch spriteBatch;
+
+        Color bgColor = new Color(111, 209, 72);
         enum GAMESTATE{MENU,OPTIONS,GAME }
         GAMESTATE currentState = GAMESTATE.MENU;
         Texture2D backGroundT;
         Texture2D holeT;
         Texture2D holeForeT;
         Texture2D moleT;
+        Texture2D koT;
         float bgscale = 1;
         float holescale = 1;
         SpriteFont arialSF;
@@ -80,11 +83,12 @@ namespace WhackAMole
         protected override void LoadContent()
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
-            arialSF = Content.Load<SpriteFont>("Arial");
+            arialSF = Content.Load<SpriteFont>("test");
             backGroundT = Content.Load<Texture2D>("background");
             holeT = Content.Load<Texture2D>("hole");
             holeForeT = Content.Load<Texture2D>("hole_foreground");
             moleT = Content.Load<Texture2D>("mole");
+            koT = Content.Load<Texture2D>("mole_KO");
             bgscale = (float)Window.ClientBounds.X / (float)backGroundT.Width;
             holescale = (float)Window.ClientBounds.X / (float)moleT.Width;
             playSize = arialSF.MeasureString("PLAY");
@@ -98,7 +102,7 @@ namespace WhackAMole
             backSize = arialSF.MeasureString("BACK");
             backButton.Init(backSize.X, backSize.Y, Window.ClientBounds.X, Window.ClientBounds.Y, "BACK", Button.BUTTON_TYPE.BACK);
 
-            SetHoles(holes, Window.ClientBounds.Width, Window.ClientBounds.Height);
+            
 
             buttons = new Button[maxNrButtons];
             buttons[currentNrOfButtons++] = playButton;
@@ -106,7 +110,8 @@ namespace WhackAMole
             buttons[currentNrOfButtons++] = highResButton;
             buttons[currentNrOfButtons++] = optionsButton;
             buttons[currentNrOfButtons++] = backButton;
-           
+            OnResize(buttons, 800, 600, _graphics);
+            SetHoles(holes, Window.ClientBounds.Width, Window.ClientBounds.Height);
         }
 
         protected override void Update(GameTime gameTime)
@@ -136,11 +141,23 @@ namespace WhackAMole
                         {
                             currentState = GAMESTATE.MENU;
                         }
+
                         for (int i = 0; i < 3; i++)
                         {
                             for (int j = 0; j < 3; j++)
                             {
                                 holes[i, j].Update(gameTime.ElapsedGameTime.TotalSeconds);
+                                if(holes[i, j].GetIsHittable())
+                                {
+                                    if (Mouse.GetState().LeftButton == ButtonState.Pressed)
+                                    {
+                                        if(Mouse.GetState().X >= holes[i, j].GetPos().X && Mouse.GetState().X <= holes[i, j].GetPos().X + koT.Width
+                                            && Mouse.GetState().Y >= holes[i, j].GetPos().Y && Mouse.GetState().Y <= holes[i, j].GetPos().Y + koT.Height)
+                                        {
+                                            holes[i, j].SetHit();
+                                        }
+                                    }
+                                }
                             }
                         }
                         break;
@@ -170,7 +187,7 @@ namespace WhackAMole
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.Green);
+            GraphicsDevice.Clear(bgColor);
             spriteBatch.Begin();
             
             
@@ -186,7 +203,7 @@ namespace WhackAMole
                     }
                 case GAMESTATE.GAME:
                     {
-                        //spriteBatch.Draw(backGroundT, new Vector2(0, 0), null, Color.White, 0.0f, new Vector2(0, 0), bgscale, SpriteEffects.None, 0);
+                        spriteBatch.Draw(backGroundT, new Vector2(0, 0), null, Color.White, 0.0f, new Vector2(0, 0), bgscale, SpriteEffects.None, 0);
                         
 
                         for (int i = 0; i < 3; i++)
