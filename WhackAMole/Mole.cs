@@ -10,6 +10,13 @@ namespace WhackAMole
 {
     internal class Mole : Tex
     {
+        public struct HitBox
+        {
+            public float X;
+            public float Y;
+            public float W;
+            public float H;
+        }
         private Texture2D m_hole;
         private Texture2D m_foreGround;
         private Texture2D m_kod;
@@ -19,21 +26,44 @@ namespace WhackAMole
         double remainingDelay = DELAY;
         double kodDelay = DELAY;
         Vector2 m_molePos;
+        HitBox m_hitbox;
         bool moveUp = true;
         Random rand = new Random();
         bool m_hit = false;
-        bool m_isHittable = false;
+        bool m_retreating = false;
         public void Update(double dt)
         {
-            if (!m_hit&& movedUnits> m_texture2D.Height * 0.25)
+            
+            if(m_hit)
             {
-                m_isHittable = true;
+                
+                kodDelay -= dt;
+                if (kodDelay <= 0 &&!m_retreating)
+                {
+                    
+                    kodDelay = DELAY;
+                    m_retreating = true;
+                    m_speed = rand.Next(5, 40);
+                }
+                if(m_retreating)
+                {
+                    
+                    if(m_molePos.Y < m_pos.Y)
+                    {
+                        m_molePos.Y += (float)dt * m_speed;
+                        m_hitbox.Y = m_molePos.Y;
+                    }
+                    else
+                    {
+                        m_hit = false;
+                        m_retreating = false;
+                        movedUnits = 0.0f;
+                        moveUp = true;
+                    }
+                    
+                }
             }
             else
-            {
-                m_isHittable = false;
-            }
-            if (!m_hit)
             {
                 movedUnits += (float)dt * m_speed;
                 if (movedUnits < m_texture2D.Height * 0.75)
@@ -41,16 +71,18 @@ namespace WhackAMole
                     if (moveUp)
                     {
                         m_molePos.Y -= (float)dt * m_speed;
+                        m_hitbox.Y = m_molePos.Y;
                     }
                     else
                     {
                         m_molePos.Y += (float)dt * m_speed;
+                        m_hitbox.Y = m_molePos.Y;
                     }
 
                 }
                 else
                 {
-                    
+
                     remainingDelay -= dt;
                     if (remainingDelay <= 0)
                     {
@@ -61,17 +93,9 @@ namespace WhackAMole
                     }
                 }
             }
-            else
-            {
-                kodDelay -= dt;
-                if(kodDelay <= 0)
-                {
-                    kodDelay = DELAY;
-                    m_hit = false;
-                    moveUp = false;
-                }
-            }
 
+
+            
 
 
         }
@@ -84,11 +108,15 @@ namespace WhackAMole
             m_molePos = pos;
             m_kod = kod;
             m_speed = rand.Next(5,40);
+            m_hitbox.X = pos.X;
+            m_hitbox.Y = pos.Y;
+            m_hitbox.W = moleT.Width;
+            m_hitbox.H = moleT.Height;
 
         }
-        public Vector2 GetPos() { return m_molePos; }
+        public Vector2 GetPos() { return m_pos; }
         public void SetHit() { m_hit = true; }
-        public bool GetIsHittable() { return m_isHittable; }
+        public HitBox GetHitBox() { return m_hitbox; }
         public void Draw(SpriteBatch sb, float scale)
         {
             sb.Draw(m_hole, m_pos, null, Color.White, 0.0f, new Vector2(0, 0), scale, SpriteEffects.None, 0);

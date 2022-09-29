@@ -38,17 +38,25 @@ namespace WhackAMole
             holes[2, 2] = new Mole(moleT, holeT, holeForeT,koT,new Vector2(wStep2 - moleT.Width, hStep2 - moleT.Height*0.5f));
 
         }
+        void Init()
+        {
+            timeValue = 60;
+            scoreValue = 0;
+            SetHoles(holes, windowW, windowH);
+            ani.SetPos(new Vector2(windowW / 2, 0));
+        }
         private GraphicsDeviceManager _graphics;
         private SpriteBatch spriteBatch;
-
+        Animation ani;
         Color bgColor = new Color(111, 209, 72);
-        enum GAMESTATE{MENU,OPTIONS,GAME }
+        enum GAMESTATE{MENU,OPTIONS,GAME, GAME_OVER }
         GAMESTATE currentState = GAMESTATE.MENU;
         Texture2D backGroundT;
         Texture2D holeT;
         Texture2D holeForeT;
         Texture2D moleT;
         Texture2D koT;
+        Texture2D aniT;
         float bgscale = 1;
         float holescale = 1;
         SpriteFont arialSF;
@@ -66,6 +74,15 @@ namespace WhackAMole
         int currentNrOfButtons = 0;
         Mole[,] holes = new Mole [3,3];
         Button[] buttons;
+        int scoreValue = 0;
+        string score = "SCORE: ";
+        double timeValue = 60.0;
+        int roundedTimeValue = 60;
+        string time = "TIME: ";
+        bool canClick = true;
+        bool isInit = false;
+        int windowW = 800;
+        int windowH = 600;
         public Game1()
         {
             _graphics = new GraphicsDeviceManager(this);
@@ -89,6 +106,7 @@ namespace WhackAMole
             holeForeT = Content.Load<Texture2D>("hole_foreground");
             moleT = Content.Load<Texture2D>("mole");
             koT = Content.Load<Texture2D>("mole_KO");
+            aniT = Content.Load<Texture2D>("spritesheet_stone");
             bgscale = (float)Window.ClientBounds.X / (float)backGroundT.Width;
             holescale = (float)Window.ClientBounds.X / (float)moleT.Width;
             playSize = arialSF.MeasureString("PLAY");
@@ -101,8 +119,7 @@ namespace WhackAMole
             optionsButton.Init(optionsSize.X, optionsSize.Y, Window.ClientBounds.X, Window.ClientBounds.Y, "OPTIONS", Button.BUTTON_TYPE.OPTIONS);
             backSize = arialSF.MeasureString("BACK");
             backButton.Init(backSize.X, backSize.Y, Window.ClientBounds.X, Window.ClientBounds.Y, "BACK", Button.BUTTON_TYPE.BACK);
-
-            
+            ani = new Animation(aniT, new Vector2(400, 0));
 
             buttons = new Button[maxNrButtons];
             buttons[currentNrOfButtons++] = playButton;
@@ -111,7 +128,7 @@ namespace WhackAMole
             buttons[currentNrOfButtons++] = optionsButton;
             buttons[currentNrOfButtons++] = backButton;
             OnResize(buttons, 800, 600, _graphics);
-            SetHoles(holes, Window.ClientBounds.Width, Window.ClientBounds.Height);
+            Init();
         }
 
         protected override void Update(GameTime gameTime)
@@ -124,7 +141,19 @@ namespace WhackAMole
 
                 case GAMESTATE.MENU:
                     {
-
+                        if(!isInit)
+                        {
+                            Init();
+                            isInit = true;
+                        }
+                         Keys[] keys = Keyboard.GetState().GetPressedKeys();
+                        if(keys.Length > 0)
+                        {
+                            if(keys[0] == Keys.Enter)
+                            {
+                                currentState = GAMESTATE.GAME;
+                            }
+                        }
                         if (playButton.Update(Mouse.GetState())==Button.PRESSED.HIT)
                         {
                             currentState = GAMESTATE.GAME;
@@ -133,30 +162,44 @@ namespace WhackAMole
                         {
                             currentState = GAMESTATE.OPTIONS;
                         }
+                        ani.Update(gameTime.ElapsedGameTime.TotalSeconds);
                         break;
                     }
                 case GAMESTATE.GAME:
                     {
+                        if(timeValue<=0)
+                        {
+                            currentState = GAMESTATE.GAME_OVER;
+                        }
                         if (backButton.Update(Mouse.GetState()) == Button.PRESSED.HIT)
                         {
                             currentState = GAMESTATE.MENU;
+                            isInit = false;
                         }
-
+                        if (Mouse.GetState().LeftButton == ButtonState.Released)
+                        {
+                            canClick = true;
+                        }
+                            timeValue -= gameTime.ElapsedGameTime.TotalSeconds;
+                        roundedTimeValue = (int)timeValue;
                         for (int i = 0; i < 3; i++)
                         {
                             for (int j = 0; j < 3; j++)
                             {
                                 holes[i, j].Update(gameTime.ElapsedGameTime.TotalSeconds);
-                                if(holes[i, j].GetIsHittable())
+                                if (Mouse.GetState().LeftButton == ButtonState.Pressed&& canClick)
                                 {
-                                    if (Mouse.GetState().LeftButton == ButtonState.Pressed)
+                                    
+                                    Mole.HitBox box = holes[i, j].GetHitBox();
+                                    if (Mouse.GetState().X >= box.X && Mouse.GetState().X <= box.X+box.W
+                                        && Mouse.GetState().Y >= box.Y && Mouse.GetState().Y <= box.Y+box.H
+                                        && Mouse.GetState().Y < holes[i, j].GetPos().Y)
                                     {
-                                        if(Mouse.GetState().X >= holes[i, j].GetPos().X && Mouse.GetState().X <= holes[i, j].GetPos().X + koT.Width
-                                            && Mouse.GetState().Y >= holes[i, j].GetPos().Y && Mouse.GetState().Y <= holes[i, j].GetPos().Y + koT.Height)
-                                        {
-                                            holes[i, j].SetHit();
-                                        }
+                                        holes[i, j].SetHit();
+                                        scoreValue++;
+                                        canClick = false;
                                     }
+                                    
                                 }
                             }
                         }
@@ -170,13 +213,26 @@ namespace WhackAMole
                         }
                         if (mediumResButton.Update(Mouse.GetState()) == Button.PRESSED.HIT)
                         {
-                            OnResize(buttons, 800, 600, _graphics);
-                            SetHoles(holes, 800, 600);
+                            windowW = 800;
+                            windowH = 600;
+                            OnResize(buttons, windowW, windowH, _graphics);
+                            SetHoles(holes, windowW, windowH);
                         }
                         if (highResButton.Update(Mouse.GetState()) == Button.PRESSED.HIT)
                         {
-                            OnResize(buttons, 1920, 1080, _graphics);
-                            SetHoles(holes, 1920, 1080);
+                            windowW = 1920;
+                            windowH = 1080;
+                            OnResize(buttons, windowW, windowH, _graphics);
+                            SetHoles(holes, windowW, windowH);
+                        }
+                        break;
+                    }
+                case GAMESTATE.GAME_OVER:
+                    {
+                        if (backButton.Update(Mouse.GetState()) == Button.PRESSED.HIT)
+                        {
+                            currentState = GAMESTATE.MENU;
+                            isInit = false;
                         }
                         break;
                     }
@@ -196,7 +252,7 @@ namespace WhackAMole
 
                 case GAMESTATE.MENU:
                     {
-                        
+                        ani.Draw(spriteBatch, 1);
                         optionsButton.Draw(spriteBatch, arialSF);
                         playButton.Draw(spriteBatch, arialSF);
                         break;
@@ -214,6 +270,8 @@ namespace WhackAMole
                             }
                         }
                         backButton.Draw(spriteBatch, arialSF);
+                        spriteBatch.DrawString(arialSF, score+scoreValue, new Vector2(0, windowH * 0.33f), Color.Red);
+                        spriteBatch.DrawString(arialSF, time + roundedTimeValue, new Vector2(0, windowH * 0.66f), Color.Red);
                         break;
                     }
                 case GAMESTATE.OPTIONS:
@@ -222,6 +280,20 @@ namespace WhackAMole
                         highResButton.Draw(spriteBatch, arialSF);
                         backButton.Draw(spriteBatch, arialSF);
 
+                        break;
+                    }
+                case GAMESTATE.GAME_OVER:
+                    {
+                        for (int i = 0; i < 3; i++)
+                        {
+                            for (int j = 0; j < 3; j++)
+                            {
+                                holes[i, j].Draw(spriteBatch, 1);
+                            }
+                        }
+                        backButton.Draw(spriteBatch, arialSF);
+                        spriteBatch.DrawString(arialSF, "GAME OVER", new Vector2(windowW*0.5f, windowH * 0.5f), Color.Red);
+                        spriteBatch.DrawString(arialSF, score+scoreValue, new Vector2(0, windowH * 0.33f), Color.Red);
                         break;
                     }
             }
