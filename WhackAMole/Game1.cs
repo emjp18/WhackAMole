@@ -27,15 +27,15 @@ namespace WhackAMole
             float wStep = (float)w / (float)3;
             float wStep1 = ((float)w / (float)3) * 2;
             float wStep2 = w;
-            holes[0, 0] = new Mole(moleT, holeT, holeForeT, koT, new Vector2(wStep - moleT.Width, hStep - moleT.Height * 0.5f));
-            holes[0, 1] = new Mole(moleT, holeT, holeForeT,koT,new Vector2(wStep - moleT.Width, hStep1 - moleT.Height * 0.5f));
-            holes[0, 2] = new Mole(moleT, holeT, holeForeT,koT,new Vector2(wStep - moleT.Width, hStep2 - moleT.Height * 0.5f));
-            holes[1, 0] = new Mole(moleT, holeT, holeForeT,koT,new Vector2(wStep1 - moleT.Width, hStep - moleT.Height * 0.5f));
-            holes[1, 1] = new Mole(moleT, holeT, holeForeT,koT,new Vector2(wStep1 - moleT.Width, hStep1 - moleT.Height * 0.5f));
-            holes[1, 2] = new Mole(moleT, holeT, holeForeT,koT,new Vector2(wStep1 - moleT.Width, hStep2 - moleT.Height * 0.5f));
-            holes[2, 0] = new Mole(moleT, holeT, holeForeT,koT,new Vector2(wStep2 - moleT.Width, hStep - moleT.Height * 0.5f));
-            holes[2, 1] = new Mole(moleT, holeT, holeForeT,koT,new Vector2(wStep2 - moleT.Width, hStep1 - moleT.Height * 0.5f));
-            holes[2, 2] = new Mole(moleT, holeT, holeForeT,koT,new Vector2(wStep2 - moleT.Width, hStep2 - moleT.Height*0.5f));
+            holes[0, 0] = new Mole(moleT, holeT, holeForeT,koT, new Vector2(wStep - moleT.Width, hStep - moleT.Height * 0.5f),0);
+            holes[0, 1] = new Mole(moleT, holeT, holeForeT,koT,new Vector2(wStep - moleT.Width, hStep1 - moleT.Height * 0.5f),1);
+            holes[0, 2] = new Mole(moleT, holeT, holeForeT,koT,new Vector2(wStep - moleT.Width, hStep2 - moleT.Height * 0.5f),2);
+            holes[1, 0] = new Mole(moleT, holeT, holeForeT,koT,new Vector2(wStep1 - moleT.Width, hStep - moleT.Height * 0.5f),3);
+            holes[1, 1] = new Mole(moleT, holeT, holeForeT,koT,new Vector2(wStep1 - moleT.Width, hStep1 - moleT.Height * 0.5f),4);
+            holes[1, 2] = new Mole(moleT, holeT, holeForeT,koT,new Vector2(wStep1 - moleT.Width, hStep2 - moleT.Height * 0.5f),5);
+            holes[2, 0] = new Mole(moleT, holeT, holeForeT,koT,new Vector2(wStep2 - moleT.Width, hStep - moleT.Height * 0.5f),6);
+            holes[2, 1] = new Mole(moleT, holeT, holeForeT,koT,new Vector2(wStep2 - moleT.Width, hStep1 - moleT.Height * 0.5f),7);
+            holes[2, 2] = new Mole(moleT, holeT, holeForeT,koT,new Vector2(wStep2 - moleT.Width, hStep2 - moleT.Height*0.5f),8);
 
         }
         void Init()
@@ -176,31 +176,18 @@ namespace WhackAMole
                             currentState = GAMESTATE.MENU;
                             isInit = false;
                         }
-                        if (Mouse.GetState().LeftButton == ButtonState.Released)
-                        {
-                            canClick = true;
-                        }
+                        
                             timeValue -= gameTime.ElapsedGameTime.TotalSeconds;
                         roundedTimeValue = (int)timeValue;
                         for (int i = 0; i < 3; i++)
                         {
                             for (int j = 0; j < 3; j++)
                             {
-                                holes[i, j].Update(gameTime.ElapsedGameTime.TotalSeconds);
-                                if (Mouse.GetState().LeftButton == ButtonState.Pressed&& canClick)
-                                {
-                                    
-                                    Mole.HitBox box = holes[i, j].GetHitBox();
-                                    if (Mouse.GetState().X >= box.X && Mouse.GetState().X <= box.X+box.W
-                                        && Mouse.GetState().Y >= box.Y && Mouse.GetState().Y <= box.Y+box.H
-                                        && Mouse.GetState().Y < holes[i, j].GetPos().Y)
-                                    {
-                                        holes[i, j].SetHit();
-                                        scoreValue++;
-                                        canClick = false;
-                                    }
-                                    
-                                }
+                                MouseState ms = Mouse.GetState();
+                                holes[i, j].Update(gameTime.ElapsedGameTime.TotalSeconds, ms, ref scoreValue);
+                                
+
+
                             }
                         }
                         break;
